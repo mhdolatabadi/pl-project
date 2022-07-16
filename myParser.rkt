@@ -60,15 +60,38 @@
                         closeBracket true false none EOF))
 
 
+(define simple-math-parser
+  (parser
+   (start Statements)
+   (end EOF)
+   (error void)
+   (tokens a b)
+   (grammar
+    (Statements
+         ((Statement semicolon) (list 'statement $1))
+         ((Statements Statement semicolon) (list 'statements $1 $2)))
+    (Statement
+         ((Compound-stmt) (list 'compound-stmt $1))
+         ((Simple-stmt) (list 'simple-stmt $1)))
+    (Simple-stmt
+         ((Assignment) (list 'assignment $1))
+         ((Global-stmt) (list 'global-stmt $1))
+         ((Return-stmt) (list 'return-stmt $1))
+         ((pass) (list 'pass))
+         ((break) (list 'break))
+         ((continue) (list 'continue)))
+    (Compound-stmt
+         ((Function-def) (list 'function-def $1))
+         ((If-stmt) (list 'if-stmt $1))
+         ((For-stmt) (list 'for-stmt $1)))
+    (Assignment
+         ((ID assignment Expression) (list 'assignment $1 $3)))
+   )
+  )
+)
+
 ;test
-;(define lex-this (lambda (lexer input) (lambda () (lexer input))))
-;(define my-lexer (lex-this simple-math-lexer (open-input-string "1+2.577+ 3 if fast Fish 4")))
-;(my-lexer)
-;(my-lexer)
-;(my-lexer)
-;(my-lexer)
-;(my-lexer)
-;(my-lexer)
-;(my-lexer)
-;(my-lexer)
-;(my-lexer)
+(define lex-this (lambda (lexer input) (lambda () (lexer input))))
+(define my-lexer (lex-this simple-math-lexer (open-input-string "1+2+ 3 +   4")))
+(let ((parser-res (simple-math-parser my-lexer))) parser-res)
+
