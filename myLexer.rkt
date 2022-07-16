@@ -9,7 +9,8 @@
   (lexer
    ((:or (:+ (char-range #\0 #\9))
          (:: (:+ (char-range #\0 #\9)) #\. (:+ (char-range #\0 #\9))))
-    (token-NUM (string->number lexeme)))
+    (token-NUM (string->number lexeme))
+   )
    (";" (token-semicolon))
    ("pass" (token-pass))
    ("break" (token-break))
@@ -42,10 +43,14 @@
    ("True" (token-true))
    ("False" (token-false))
    ("None" (token-none))
+   ((:+(:or (char-range #\a #\z)
+            (char-range #\A #\Z)))
+    (token-ID lexeme)
+   )
    (whitespace (simple-math-lexer input-port))
    ((eof) (token-EOF))))
 
-(define-tokens a (NUM))
+(define-tokens a (NUM ID))
 (define-empty-tokens b (semicolon pass break continue
                         assignment return global def
                         openParenthesis closeParenthesis
@@ -57,7 +62,7 @@
 
 ;test
 (define lex-this (lambda (lexer input) (lambda () (lexer input))))
-(define my-lexer (lex-this simple-math-lexer (open-input-string "1+2.577+ 3 +-   4")))
+(define my-lexer (lex-this simple-math-lexer (open-input-string "1+2.577+ 3 if fast Fish 4")))
 (my-lexer)
 (my-lexer)
 (my-lexer)
