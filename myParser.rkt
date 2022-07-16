@@ -86,6 +86,33 @@
          ((For-stmt) (list 'for-stmt $1)))
     (Assignment
          ((ID assignment Expression) (list 'assignment $1 $3)))
+    (Return-stmt
+         ((return) (list 'return-none))
+         ((return Expression) (list 'return $2)))
+    (Global-stmt
+         ((global ID) (list 'global $2)))
+    (Function-def
+         ((def ID openParenthesis Params closeParenthesis colon Statements) (list 'function-with-params $2 $4 $7))
+         ((def ID openParenthesis closeParenthesis colon Statements) (list 'function-without-params $2 $6)))
+    (Params
+         ((Param-with-default) (list 'param-with-default $1))
+         ((Params comma Param-with-default) (list 'param-list $1 $3)))
+    (Param-with-default
+         ((ID assignment Expression) (list 'param-init $1 $3)))
+    (If-stmt
+         ((if Expression colon Statements Else-block) (list 'if-block $2 $4 $5)))
+    (Else-block
+         ((else colon Statements) (list 'else-block $3)))
+    (For-stmt
+         ((for ID in Expression colon Statements) (list 'for-block $2 $4 $6)))
+    (Expression
+         ((Disjunction) (list 'disjunction $1)))
+    (Disjunction
+         ((Conjunction) (list 'conjunction $1))
+         ((Disjunction or Conjunction) (list 'disjunction-or-conjunction $1 $3)))
+    (Conjunction
+         ((Inversion) (list 'inversion $1))
+         ((Conjunction and Inversion) (list 'conjunction-and-inversion $1 $3)))
    )
   )
 )
