@@ -113,6 +113,40 @@
     (Conjunction
          ((Inversion) (list 'inversion $1))
          ((Conjunction and Inversion) (list 'conjunction-and-inversion $1 $3)))
+    (Inversion
+         ((not Inversion) (list 'not-inversion $2))
+         ((Comparison) (list 'comparison $1)))
+    (Comparison
+         ((Eq-sum) (list 'eq-sum $1))
+         ((Lt-sum) (list 'lt-sum $1))
+         ((Gt-sum) (list 'gt-sum $1))
+         ((Sum) (list 'sum $1)))
+    (Eq-sum
+         ((Sum equals Sum) (list 'equals $1 $3)))
+    (Lt-sum
+         ((Sum lessThan Sum) (list 'less-than $1 $3)))
+    (Gt-sum
+         ((Sum greaterThan Sum) (list 'greater-than $1 $3)))
+    (Sum
+         ((Sum plus Term) (list 'plus-sum $1 $3))
+         ((Sum minus Term) (list 'minus-sum $1 $3))
+         ((Term) (list 'term $1)))
+    (Term
+         ((Term mul Factor) (list 'mul-term $1 $3))
+         ((Term div Factor) (list 'div-term $1 $3))
+         ((Factor) (list 'factor $1)))
+    (Factor
+         ((plus Power) (list 'plus-power $2))
+         ((minus Power) (list 'minus-power $2))
+         ((Power) (list 'power $1)))
+    (Power
+         ((Atom pow Factor) (list 'atom-to-power $1 $3))
+         ((Primary) (list 'power-primary $1)))
+    (Primary
+         ((Atom) (list 'primary-atom $1))
+         ((Primary openBracket Expression closeBracket) (list 'primary-bracket $1 $3))
+         ((Primary openParenthesis closeParenthesis) (list 'primary-no-arg-call $1))
+         ((Primary openParenthesis Arguments closeParenthesis) (list 'primary-arg-call $1 $3)))
    )
   )
 )
