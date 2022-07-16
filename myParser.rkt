@@ -147,6 +147,22 @@
          ((Primary openBracket Expression closeBracket) (list 'primary-bracket $1 $3))
          ((Primary openParenthesis closeParenthesis) (list 'primary-no-arg-call $1))
          ((Primary openParenthesis Arguments closeParenthesis) (list 'primary-arg-call $1 $3)))
+    (Arguments
+         ((Expression) (list 'expression-argument $1))
+         ((Arguments comma Expression) (list 'argument-list $1 $3)))
+    (Atom
+         ((ID) (list 'atom-id $1))
+         ((true) (list 'atom-true))
+         ((false) (list 'atom-false))
+         ((none) (list 'atom-none))
+         ((NUM) (list 'atom-num $1))
+         ((List) (list 'atom-list $1)))
+    (List
+         ((openBracket Expressions closeBracket) (list 'list $2))
+         ((openBracket closeBracket) (list 'empty-list)))
+    (Expressions
+         ((Expressions comma Expression) (list 'expression-list $1 $3))
+         ((Expression) (list 'last-expression $1)))
    )
   )
 )
