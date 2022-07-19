@@ -62,11 +62,13 @@
 
 (define simple-math-parser
   (parser
-   (start Statements)
+   (start Program)
    (end EOF)
    (error void)
    (tokens a b)
    (grammar
+    (Program
+         ((Statements) (list 'program $1)))
     (Statements
          ((Statement semicolon) (list 'statement $1))
          ((Statements Statement semicolon) (list 'statements $1 $2)))
@@ -169,6 +171,6 @@
 
 ;test
 (define lex-this (lambda (lexer input) (lambda () (lexer input))))
-(define my-lexer (lex-this simple-math-lexer (open-input-string "1+2+ 3 +   4")))
+(define my-lexer (lex-this simple-math-lexer (open-input-string "a = 2;")))
 (let ((parser-res (simple-math-parser my-lexer))) parser-res)
 
