@@ -106,5 +106,4 @@
   (atom-list
    (val (list-of expression?))))
 
-
-(provide all-defined-out)
+ (provide (all-defined-out))

@@ -35,7 +35,7 @@
    (">" (token-greaterThan))
    ("+" (token-plus))
    ("-" (token-minus))
-   ("*" (token-mul))
+   ("*" (token-mul)) 
    ("/" (token-div))
    ("**" (token-pow))
    ("[" (token-openBracket))
@@ -171,6 +171,5 @@
 
 ;test
 (define lex-this (lambda (lexer input) (lambda () (lexer input))))
-(define my-lexer (lex-this simple-math-lexer (open-input-string "a = 2;")))
+(define my-lexer (lex-this simple-math-lexer (open-input-file "sample.txt")))
 (let ((parser-res (simple-math-parser my-lexer))) parser-res)
-
