@@ -140,4 +140,27 @@
   (atom-list
    (val (list-of expression?))))
 
+(define-datatype thunk thunk?
+  (a-thunk
+   (expression expression?)
+   (environment list?)
+   (saved-store list?)))
+
+(define-datatype proc proc?
+  (procedure
+   (id symbol?)
+   (params list?)
+   (body list?)))
+
+(define-datatype expval expval?
+  (num-val
+   (num number?))
+  (bool-val
+   (bool boolean?))
+  (list-val
+   (lst list?))
+  (proc-val
+   (proc proc?))
+  (none-val))
+
 
