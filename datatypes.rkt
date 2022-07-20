@@ -1,51 +1,68 @@
-#lang eopl
+#lang racket
+
+(require (lib "eopl.ss" "eopl"))
+(provide (all-defined-out))
+
 
 (define-datatype program program?
   (a-program
    (stmnts (list-of statement?))))
 
 (define-datatype statement statement?
-  (compound
+  (compound-stmt
    (stmnt compound-statement?))
-  (simple
+  (simple-stmt
    (stmnt simple-statement?)))
 
 (define-datatype compound-statement compound-statement?
   (function-def
-   (id string?)
+   (id symbol?)
    (params (list-of parameter?))
    (body (list-of statement?)))
   (if-stmt
-   (exp expression?)
-   (stmts (list-of statement?))
+   (condition expression?)
+   (body (list-of statement?))
    (else-block (list-of statement?)))
   (for-stmt
-   (id string?)
+   (id symbol?)
    (exp expression?)
-   (stmts (list-of statement?))))
+   (body (list-of statement?)))
+  )
 
 (define-datatype parameter parameter?
   (param-with-default
-   (id string?)
+   (id symbol?)
    (default expression?)))
 
 (define-datatype simple-statement simple-statement?
-  (assignment
-   (id string?)
-   (exp expression?))
+  (assign-stmt
+   (id symbol?)
+   (right-hand expression?))
   (global-stmt
-   (id string?))
+   (id symbol?))
   (return-stmt
    (exp expression?))
-  (pass)
-  (break)
-  (continue))
+  (pass-stmt)
+  (break-stmt)
+  (continue-stmt))
 
 (define-datatype expression expression?
-  (disjunctions (list-of conjunction?)))
+  (disjunc (arg disjunction?)))
+  
+(define-datatype disjunction disjunction?
+  (simple-disjunct
+   (arg conjunction?))
+  (compound-disjunct
+   (arg1 disjunction?)
+   (arg2 conjunction?)))
 
 (define-datatype conjunction conjunction?
-  (inversions (list-of inversion?)))
+  (simple-conjunct
+   (arg inversion?))
+  (compound-conjunct
+   (arg1 conjunction?)
+   (arg2 inversion?))
+  )
 
 (define-datatype inversion inversion?
   (not-inv
@@ -63,27 +80,44 @@
   (gt-sum
    (sum1 sum?)
    (sum2 sum?))
-  (simple-sum
+  (simple-comp
    (sum1 sum?)))
 
 (define-datatype sum sum?
-  (terms (list-of term?)))
+  (addition-sum
+   (left sum?)
+   (right term?))
+  (subtraction-sum
+   (left sum?)
+   (right term?))
+  (simple-sum
+   (t term?)))
 
 (define-datatype term term?
-  (factors (list-of factor?)))
+  (mult-factor
+   (left term?)
+   (right-hand factor?))
+  (div-factor
+   (left term?)
+   (right factor?))
+  (simple-term
+   (x factor?))
+  )
 
 (define-datatype factor factor?
-  (positive-factor
-   (arg power?))
-  (negative-factor
-   (arg power?)))
+  (plus-factor
+   (x factor?))
+  (minus-factor
+   (x factor?))
+  (simple-factor
+   (x power?)))
 
 (define-datatype power power?
-  (power1
-   (arg1 atom?)
-   (arg2 factor?))
-  (power2
-   (arg1 primary?)))
+  (to-power
+   (left atom?)
+   (right factor?))
+  (simple-power
+   (x primary?)))
 
 (define-datatype primary primary?
   (primary-simple
@@ -97,13 +131,13 @@
 
 (define-datatype atom atom?
   (atom-var
-   (id string?))
+   (id symbol?))
   (atom-bool
-   (val boolean?))
+   (val symbol?))
   (atom-none)
   (atom-number
    (val number?))
   (atom-list
    (val (list-of expression?))))
 
- (provide (all-defined-out))
+

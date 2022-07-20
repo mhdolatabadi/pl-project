@@ -5,7 +5,9 @@
          (prefix-in : parser-tools/lex-sre)
          parser-tools/yacc)
 
-(define simple-math-lexer
+(provide (all-defined-out))
+
+(define my-simple-lexer
   (lexer
    ((:or (:+ (char-range #\0 #\9))
          (:: (:+ (char-range #\0 #\9)) #\. (:+ (char-range #\0 #\9))))
@@ -47,7 +49,7 @@
             (char-range #\A #\Z)))
     (token-ID lexeme)
    )
-   (whitespace (simple-math-lexer input-port))
+   (whitespace (my-simple-lexer input-port))
    ((eof) (token-EOF))))
 
 (define-tokens a (NUM ID))

@@ -5,171 +5,111 @@
          (prefix-in : parser-tools/lex-sre)
          parser-tools/yacc)
 
-(define simple-math-lexer
-  (lexer
-   ((:or (:+ (char-range #\0 #\9))
-         (:: (:+ (char-range #\0 #\9)) #\. (:+ (char-range #\0 #\9))))
-    (token-NUM (string->number lexeme))
-   )
-   (";" (token-semicolon))
-   ("pass" (token-pass))
-   ("break" (token-break))
-   ("continue" (token-continue))
-   ("=" (token-assignment))
-   ("return" (token-return))
-   ("global" (token-global))
-   ("def" (token-def))
-   ("(" (token-openParenthesis))
-   (")" (token-closeParenthesis))
-   (":" (token-colon))
-   ("," (token-comma))
-   ("if" (token-if))
-   ("else" (token-else))
-   ("for" (token-for))
-   ("in" (token-in))
-   ("or" (token-or))
-   ("and" (token-and))
-   ("not" (token-not))
-   ("==" (token-equals))
-   ("<" (token-lessThan))
-   (">" (token-greaterThan))
-   ("+" (token-plus))
-   ("-" (token-minus))
-   ("*" (token-mul)) 
-   ("/" (token-div))
-   ("**" (token-pow))
-   ("[" (token-openBracket))
-   ("]" (token-closeBracket))
-   ("True" (token-true))
-   ("False" (token-false))
-   ("None" (token-none))
-   ((:+(:or (char-range #\a #\z)
-            (char-range #\A #\Z)))
-    (token-ID lexeme)
-   )
-   (whitespace (simple-math-lexer input-port))
-   ((eof) (token-EOF))))
-
-(define-tokens a (NUM ID))
-(define-empty-tokens b (semicolon pass break continue
-                        assignment return global def
-                        openParenthesis closeParenthesis
-                        colon comma if else for in or
-                        and not equals lessThan greaterThan
-                        plus minus mul div pow openBracket
-                        closeBracket true false none EOF))
+(require "myLexer.rkt")
+(require "datatypes.rkt")
 
 
-(define simple-math-parser
-  (parser
-   (start Program)
-   (end EOF)
-   (error void)
-   (tokens a b)
-   (grammar
-    (Program
-         ((Statements) (list 'program $1)))
-    (Statements
-         ((Statement semicolon) (list 'statement $1))
-         ((Statements Statement semicolon) (list 'statements $1 $2)))
-    (Statement
-         ((Compound-stmt) (list 'compound-stmt $1))
-         ((Simple-stmt) (list 'simple-stmt $1)))
-    (Simple-stmt
-         ((Assignment) (list 'assignment $1))
-         ((Global-stmt) (list 'global-stmt $1))
-         ((Return-stmt) (list 'return-stmt $1))
-         ((pass) (list 'pass))
-         ((break) (list 'break))
-         ((continue) (list 'continue)))
-    (Compound-stmt
-         ((Function-def) (list 'function-def $1))
-         ((If-stmt) (list 'if-stmt $1))
-         ((For-stmt) (list 'for-stmt $1)))
-    (Assignment
-         ((ID assignment Expression) (list 'assignment $1 $3)))
-    (Return-stmt
-         ((return) (list 'return-none))
-         ((return Expression) (list 'return $2)))
-    (Global-stmt
-         ((global ID) (list 'global $2)))
-    (Function-def
-         ((def ID openParenthesis Params closeParenthesis colon Statements) (list 'function-with-params $2 $4 $7))
-         ((def ID openParenthesis closeParenthesis colon Statements) (list 'function-without-params $2 $6)))
-    (Params
-         ((Param-with-default) (list 'param-with-default $1))
-         ((Params comma Param-with-default) (list 'param-list $1 $3)))
-    (Param-with-default
-         ((ID assignment Expression) (list 'param-init $1 $3)))
-    (If-stmt
-         ((if Expression colon Statements Else-block) (list 'if-block $2 $4 $5)))
-    (Else-block
-         ((else colon Statements) (list 'else-block $3)))
-    (For-stmt
-         ((for ID in Expression colon Statements) (list 'for-block $2 $4 $6)))
-    (Expression
-         ((Disjunction) (list 'disjunction $1)))
-    (Disjunction
-         ((Conjunction) (list 'conjunction $1))
-         ((Disjunction or Conjunction) (list 'disjunction-or-conjunction $1 $3)))
-    (Conjunction
-         ((Inversion) (list 'inversion $1))
-         ((Conjunction and Inversion) (list 'conjunction-and-inversion $1 $3)))
-    (Inversion
-         ((not Inversion) (list 'not-inversion $2))
-         ((Comparison) (list 'comparison $1)))
-    (Comparison
-         ((Eq-sum) (list 'eq-sum $1))
-         ((Lt-sum) (list 'lt-sum $1))
-         ((Gt-sum) (list 'gt-sum $1))
-         ((Sum) (list 'sum $1)))
-    (Eq-sum
-         ((Sum equals Sum) (list 'equals $1 $3)))
-    (Lt-sum
-         ((Sum lessThan Sum) (list 'less-than $1 $3)))
-    (Gt-sum
-         ((Sum greaterThan Sum) (list 'greater-than $1 $3)))
-    (Sum
-         ((Sum plus Term) (list 'plus-sum $1 $3))
-         ((Sum minus Term) (list 'minus-sum $1 $3))
-         ((Term) (list 'term $1)))
-    (Term
-         ((Term mul Factor) (list 'mul-term $1 $3))
-         ((Term div Factor) (list 'div-term $1 $3))
-         ((Factor) (list 'factor $1)))
-    (Factor
-         ((plus Power) (list 'plus-power $2))
-         ((minus Power) (list 'minus-power $2))
-         ((Power) (list 'power $1)))
-    (Power
-         ((Atom pow Factor) (list 'atom-to-power $1 $3))
-         ((Primary) (list 'power-primary $1)))
-    (Primary
-         ((Atom) (list 'primary-atom $1))
-         ((Primary openBracket Expression closeBracket) (list 'primary-bracket $1 $3))
-         ((Primary openParenthesis closeParenthesis) (list 'primary-no-arg-call $1))
-         ((Primary openParenthesis Arguments closeParenthesis) (list 'primary-arg-call $1 $3)))
-    (Arguments
-         ((Expression) (list 'expression-argument $1))
-         ((Arguments comma Expression) (list 'argument-list $1 $3)))
-    (Atom
-         ((ID) (list 'atom-id $1))
-         ((true) (list 'atom-true))
-         ((false) (list 'atom-false))
-         ((none) (list 'atom-none))
-         ((NUM) (list 'atom-num $1))
-         ((List) (list 'atom-list $1)))
-    (List
-         ((openBracket Expressions closeBracket) (list 'list $2))
-         ((openBracket closeBracket) (list 'empty-list)))
-    (Expressions
-         ((Expressions comma Expression) (list 'expression-list $1 $3))
-         ((Expression) (list 'last-expression $1)))
-   )
-  )
-)
+(define my-simple-parser
+           (parser
+            (start Program)
+            (end EOF)
+            (error void)
+            (tokens a b)
+            (grammar
+             (Program ((Statements) (a-program $1)))
+             (Statements ((Statement semicolon) (list $1))
+                         ((Statements Statement semicolon) (append $1 (list $2))))
+             (Statement ((Compound-stmt) (compound-stmt $1))
+                        ((Simple-stmt) (simple-stmt $1)))
+             (Simple-stmt ((Assignment) $1)
+                          ((Return-stmt) $1)
+                          ((Global-stmt) $1)
+                          ((pass) (pass-stmt))
+                          ((break) (break-stmt))
+                          ((continue) (continue-stmt)))
+                          ;((Print-stmt) $1)
+                          ;((Printval-stmt) $1)
+                          ;((Evaluate-stmt) $1))
+             (Compound-stmt ((Function-def) $1)
+                            ((If-stmt) $1)
+                            ((For-stmt) $1))
+             (Assignment ((ID assignment Expression)
+                          (assign-stmt (string->symbol $1) $3)))
+             (Return-stmt ((return) (return-stmt '()))
+                          ((return Expression) (return-stmt $2)))
+             (Global-stmt ((global ID) (global-stmt (string->symbol $2))))
+             (Function-def ((def ID openParenthesis Params closeParenthesis colon Statements)
+                            (function-def (string->symbol $2) $4 $7))
+                           ((def ID openParenthesis closeParenthesis colon Statements)
+                            (function-def (string->symbol $2) (list) $6)))
+             (Params ((Param-with-default) (list $1))
+                     ((Params comma Param-with-default) (append $1 (list $3))))
+             (Param-with-default ((ID assignment Expression)
+                                  (param-with-default (string->symbol $1) $3)))
+             (If-stmt ((if Expression colon Statements Else-block)
+                       (if-stmt $2 $4 $5)))
+             (Else-block ((else colon Statements) $3))
+             (For-stmt ((for ID in Expression colon Statements)
+                        (for-stmt (string->symbol $2) $4 $6)))
+             (Expression ((Disjunction) (disjunc $1)))
+             (Disjunction ((Conjunction) (simple-disjunct $1))
+                          ((Disjunction or Conjunction) (compound-disjunct $1 $3)))
+             (Conjunction ((Inversion) (simple-conjunct $1))
+                          ((Conjunction and Inversion) (compound-conjunct $1 $3)))
+             (Inversion ((not Inversion) (not-inv $2))
+                        ((Comparison) (comp-inv $1)))
+             (Comparison ((Sum equals Sum) (eq-sum $1 $3))
+                         ((Sum lessThan Sum) (lt-sum $1 $3))
+                         ((Sum greaterThan Sum) (gt-sum $1 $3))
+                         ((Sum) (simple-comp $1)))
+             (Sum ((Sum plus Term) (addition-sum $1 $3))
+                  ((Sum minus Term) (subtraction-sum $1 $3))
+                  ((Term) (simple-sum $1)))
+             (Term ((Term mul Factor) (mult-factor $1 $3))
+                   ((Term div Factor) (div-factor $1 $3))
+                   ((Factor) (simple-term $1)))
+             (Factor ((plus Factor) (plus-factor $2))
+                     ((minus Factor) (minus-factor $2))
+                     ((Power) (simple-factor $1)))
+             (Power ((Atom pow Factor) (to-power $1 $3))
+                    ((Primary) (simple-power $1)))
+             (Primary ((Atom) (primary-simple $1))
+                      ((Primary openBracket Expression closeBracket)
+                       (primary-indexed $1 $3))
+                      ((Primary openParenthesis closeParenthesis)
+                       (primary-called $1 '()))
+                      ((Primary openParenthesis Arguments closeParenthesis)
+                       (primary-called $1 $3)))
+             (Arguments ((Expression) (list $1))
+                        ((Arguments comma Expression) (append $1 (list $3))))
+             (Atom ((ID) (atom-var (string->symbol $1)))
+                   ((true) (atom-bool 'True))
+                   ((false) (atom-bool 'False))
+                   ((none) (atom-none))
+                   ((NUM) (atom-number $1))
+                   ((List) (atom-list $1)))
+             (Atom-list ((Atom) (list $1))
+                        ((Atom-list comma Atom) (append $1 (list $3))))
+             (List ((openBracket Expressions closeBracket) $2)
+                   ((openBracket closeBracket) (list)))
+             (Expressions ((Expressions comma Expression) (append $1 (list $3)))
+                          ((Expression) (list $1)))
+             ;(Print-stmt ((print opening-paranthesis Atom-list closing-paranthesis)
+             ;             (print-statement $3)))
+             ;(Printval-stmt ((printval opening-paranthesis Expressions closing-paranthesis)
+             ;             (printval-statement $3)))
+             ;(Evaluate-stmt
+             ;((evaluate opening-paranthesis double-quote FILE-ADDRESS double-quote closing-paranthesis)
+              ; (evaluate-statement (substring $4 1 (- (string-length $4) 1)))))
+             )))
 
 ;test
 (define lex-this (lambda (lexer input) (lambda () (lexer input))))
-(define my-lexer (lex-this simple-math-lexer (open-input-file "sample.txt")))
-(let ((parser-res (simple-math-parser my-lexer))) parser-res)
+(define (my-lexer file-path) (lex-this my-simple-lexer (open-input-file file-path)))
+;(let ((parser-res (my-simple-parser my-lexer))) parser-res)
+
+(define parse
+  (lambda (file-path)
+    (my-simple-parser (my-lexer file-path))))
+
+(provide parse)
