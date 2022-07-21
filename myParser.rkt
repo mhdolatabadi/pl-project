@@ -13,7 +13,7 @@
            (parser
             (start Program)
             (end EOF)
-            (error void)
+            (error (lambda (a b c) (display c)))
             (tokens a b)
             (grammar
              (Program ((Statements) (a-program $1)))
@@ -26,10 +26,8 @@
                           ((Global-stmt) $1)
                           ((pass) (pass-stmt))
                           ((break) (break-stmt))
-                          ((continue) (continue-stmt)))
-                          ;((Print-stmt) $1)
-                          ;((Printval-stmt) $1)
-                          ;((Evaluate-stmt) $1))
+                          ((continue) (continue-stmt))
+                          ((Print) $1))
              (Compound-stmt ((Function-def) $1)
                             ((If-stmt) $1)
                             ((For-stmt) $1))
@@ -94,14 +92,8 @@
                    ((openBracket closeBracket) (list)))
              (Expressions ((Expressions comma Expression) (append $1 (list $3)))
                           ((Expression) (list $1)))
-             ;(Print-stmt ((print opening-paranthesis Atom-list closing-paranthesis)
-             ;             (print-statement $3)))
-             ;(Printval-stmt ((printval opening-paranthesis Expressions closing-paranthesis)
-             ;             (printval-statement $3)))
-             ;(Evaluate-stmt
-             ;((evaluate opening-paranthesis double-quote FILE-ADDRESS double-quote closing-paranthesis)
-              ; (evaluate-statement (substring $4 1 (- (string-length $4) 1)))))
-             )))
+             (Print ((print openParenthesis Expressions closeParenthesis)
+                          (print-stmt $3))))))
 
 ;test
 (define lex-this (lambda (lexer input) (lambda () (lexer input))))

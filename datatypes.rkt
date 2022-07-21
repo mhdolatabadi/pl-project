@@ -42,6 +42,8 @@
    (id symbol?))
   (return-stmt
    (exp expression?))
+  (print-stmt
+   (atoms (list-of expression?)))
   (pass-stmt)
   (break-stmt)
   (continue-stmt))
@@ -162,5 +164,13 @@
   (proc-val
    (proc proc?))
   (none-val))
+
+(define (expval->val exp1)
+  (cases expval exp1
+    (list-val (lst) lst)
+    (bool-val (bool) bool)
+    (num-val (num) num)
+    (none-val () 'None)
+    (proc-val (p) p)))
 
 

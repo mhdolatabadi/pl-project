@@ -17,6 +17,7 @@
    ("pass" (token-pass))
    ("break" (token-break))
    ("continue" (token-continue))
+   ("print" (token-print))
    ("=" (token-assignment))
    ("return" (token-return))
    ("global" (token-global))
@@ -53,7 +54,7 @@
    ((eof) (token-EOF))))
 
 (define-tokens a (NUM ID))
-(define-empty-tokens b (semicolon pass break continue
+(define-empty-tokens b (semicolon pass break continue print
                         assignment return global def
                         openParenthesis closeParenthesis
                         colon comma if else for in or
