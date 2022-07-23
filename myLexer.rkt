@@ -11,8 +11,9 @@
   (lexer
    ((:or (:+ (char-range #\0 #\9))
          (:: (:+ (char-range #\0 #\9)) #\. (:+ (char-range #\0 #\9))))
-    (token-NUM (string->number lexeme))
-   )
+    (token-NUM (string->number lexeme)))
+   ("\"" (token-doubleQuote))
+   ("evaluate" (token-evaluate))
    (";" (token-semicolon))
    ("pass" (token-pass))
    ("break" (token-break))
@@ -48,19 +49,21 @@
    ("None" (token-none))
    ((:+(:or (char-range #\a #\z)
             (char-range #\A #\Z)))
-    (token-ID lexeme)
-   )
+    (token-ID lexeme))
+   ((:: "\"" (complement "\"") "\"")
+    (token-PATH lexeme))
    (whitespace (my-simple-lexer input-port))
    ((eof) (token-EOF))))
 
-(define-tokens a (NUM ID))
+(define-tokens a (NUM ID PATH))
 (define-empty-tokens b (semicolon pass break continue print
                         assignment return global def
                         openParenthesis closeParenthesis
                         colon comma if else for in or
                         and not equals lessThan greaterThan
                         plus minus mul div pow openBracket
-                        closeBracket true false none EOF))
+                        closeBracket true false none EOF
+                        doubleQuote evaluate))
 
 
 ;test

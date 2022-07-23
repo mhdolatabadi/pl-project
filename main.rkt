@@ -10,4 +10,3 @@
     (value-of-program (parse file-path))))
 
 (define program "sample.txt")
-

@@ -71,7 +71,10 @@
                           env))
     (pass-stmt () env)
     (break-stmt () env)
-    (continue-stmt () env)))
+    (continue-stmt () env)
+    (evaluate-stmt (path)
+                   (let ((result (value-of-program (parse path))))
+                     (begin (display result) env)))))
 
 
 (define (value-of-assignment-statement id right-hand env)
@@ -276,7 +279,7 @@
 (define (get-global-environment env)
   (if (null? env) env
       (if (has-scope env)
-          (if (and (null? (cdar env)) (eqv? (caar env)) 'global_scope)
+          (if (and (null? (cdar env)) (eqv? (caar env) 'global_scope))
               (cdr env)
               (get-global-environment (cdr env)))
           env)))

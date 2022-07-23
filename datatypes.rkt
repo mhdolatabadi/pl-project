@@ -44,6 +44,8 @@
    (exp expression?))
   (print-stmt
    (atoms (list-of expression?)))
+  (evaluate-stmt
+   (path string?))
   (pass-stmt)
   (break-stmt)
   (continue-stmt))
